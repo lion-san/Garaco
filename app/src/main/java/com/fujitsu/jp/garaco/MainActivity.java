@@ -12,6 +12,10 @@ import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 
@@ -31,6 +35,7 @@ public class MainActivity extends ActionBarActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
 
                 try {
                     // インテント作成
@@ -52,11 +57,14 @@ public class MainActivity extends ActionBarActivity {
                     Toast.makeText(MainActivity.this,
                             "ActivityNotFoundException", Toast.LENGTH_LONG).show();
                 }
-
                 //test code
                 //Getリクエストの送信 for Garako
-                //SendHttpRequest http = new SendHttpRequest();
-                //String url = http.sendRequestToGarako("hoge");
+                /*SendHttpRequest http = new SendHttpRequest();
+                String data = http.sendRequestToGarako("おはよう");
+                WebView webView;
+                webView = (WebView) findViewById(R.id.webView);
+                //webView.loadUrl(url);
+                webView.loadData(data, "text/html", null);*/
             }
         });
     }
@@ -83,20 +91,72 @@ public class MainActivity extends ActionBarActivity {
 
             //Getリクエストの送信 for Garako
             SendHttpRequest http = new SendHttpRequest();
-            String url = http.sendRequestToGarako(resultsString);
+            String json_org = http.sendRequestToGarako(resultsString);
             // トーストを使って結果を表示
-            Toast.makeText(this, url, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, json_org, Toast.LENGTH_LONG).show();
 
             WebView webView;
 
             webView = (WebView) findViewById(R.id.webView);
             //webView.loadUrl(url);
-            webView.loadData(url, "text/html", null);
+            //webView.loadData(data, "text/html", null);
+            webView.loadDataWithBaseURL(null, json_org, "text/html", "UTF-8", null);
+
+
+            //----------------------------------
+            //-- JSONの振り分け処理
+            //----------------------------------
+            try {
+                JSONArray  jsons = new JSONArray(json_org);
+
+                for (int i = 0; i < jsons.length(); i++) {
+                    // 予報情報を取得
+                    JSONObject event = jsons.getJSONObject(i);
+                    // Event
+                    String e = event.getString("event");
+                    // Operator
+                    String operator = event.getString("operator");
+                    // 条件
+                    String param = event.getString("param");
+
+
+                    //条件の検査
+                    if( operator.equals("==")){//完全一致の場合
+
+                        if(resultsString.equals( param )){
+                            //処理の実行
+                            executeAction( event.getJSONArray("actions"));
+                        }
+                    }
+                    else{//部分一致の場合
+                        if(resultsString.indexOf(param) != -1){
+                            //処理の実行
+                            executeAction( event.getJSONArray("actions"));
+                        }
+
+                    }
+
+                }
+
+            } catch (JSONException e) {
+
+            }
+
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    /**
+     * 処理の実行
+     * @param actions
+     */
+    private void executeAction( JSONArray actions ) throws JSONException{
+
+
+        for(int i = 0; i < actions.length(); i++){
+            JSONObject action = actions.getJSONObject(i);
 
         }
-
-        super.onActivityResult(requestCode, resultCode, data);
-
     }
 
 
