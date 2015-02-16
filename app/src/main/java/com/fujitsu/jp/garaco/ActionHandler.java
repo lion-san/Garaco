@@ -30,8 +30,8 @@ public class ActionHandler {
         for(int i = 0; i < actions.length(); i++){
             JSONObject action = actions.getJSONObject(i);
 
-            Toast.makeText(activity, action.getString("action"), Toast.LENGTH_SHORT).show();
-            Toast.makeText(activity, action.getString("param"), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(activity, action.getString("action"), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(activity, action.getString("param"), Toast.LENGTH_SHORT).show();
 
             //actionに基づき動作
             exec(action.getString("action"),  action.getString("param"));
@@ -79,6 +79,7 @@ public class ActionHandler {
     private void doTalk( String param){
 
         tts.speak(param, TextToSpeech.QUEUE_FLUSH, null);
+        Toast.makeText(activity, param, Toast.LENGTH_SHORT).show();
 
     }
 

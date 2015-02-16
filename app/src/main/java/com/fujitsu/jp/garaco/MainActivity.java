@@ -7,6 +7,7 @@ import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.SpannableStringBuilder;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -87,7 +88,9 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
             public void onClick(View v) {
 //テストの押した動作
                 EditText txt = (EditText) findViewById(R.id.txt1);
-                executeRobot( txt.toString() );
+                SpannableStringBuilder sb = (SpannableStringBuilder)txt.getText();
+                String str = sb.toString();
+                executeRobot( str );
             }
         });
     }
