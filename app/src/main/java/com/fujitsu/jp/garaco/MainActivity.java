@@ -2,6 +2,7 @@ package com.fujitsu.jp.garaco;
 
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.speech.RecognizerIntent;
@@ -31,6 +32,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
     private static final int REQUEST_CODE = 0;
 
     private TextToSpeech tts;
+    private Context context;
 
     private ProgressDialog progressBar;
 
@@ -50,6 +52,9 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Contextの取得
+        context = getApplicationContext();
+
         //ボタンの押した動作
         Button button = (Button) findViewById(R.id.talk);
 
@@ -57,7 +62,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
         Button send = (Button) findViewById(R.id.send);
 
         //TTSの初期化
-        tts = new TextToSpeech(getApplicationContext(), this);
+        tts = new TextToSpeech(context, this);
 
         //ぐるぐる
         progressBar = new ProgressDialog(this);
@@ -184,6 +189,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
 
                 ActionHandler act = new ActionHandler();
                 act.setTts(this.getTts());
+                act.setContext( context );
 
                 //----------------------------------
                 //-- JSONの振り分け処理

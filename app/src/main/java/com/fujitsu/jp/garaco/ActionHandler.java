@@ -1,6 +1,11 @@
 package com.fujitsu.jp.garaco;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
@@ -16,6 +21,7 @@ import org.json.JSONObject;
 public class ActionHandler {
 
     private Activity activity;
+    private Context context;
     private TextToSpeech tts;
 
     /**
@@ -85,20 +91,39 @@ public class ActionHandler {
 
     private void doFlash(){
 
-        Camera camera;
-
-        //カメラデバイス取得
-        camera = Camera.open();
-        //カメラデバイス動作開始
-        camera.startPreview();
-
-        //パラメータ取得
-        Camera.Parameters params = camera.getParameters();
-        //フラッシュモードを点灯に設定
-        params.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
-        //パラメータ設定
-        camera.setParameters(params);
+        generateNotification("");
     }
+
+    private void generateNotification(String message) {
+
+        //システムトレイに通知するアイコン
+       // int icon = R.drawable.ic_stat_gcm;
+        long when = System.currentTimeMillis();
+
+        Notification notification = new Notification(0, message, when);
+        //String title = context.getString(R.string.app_name);
+
+              //ステータスバーをクリックした時に立ち上がるアクティビティ
+        //Intent notificationIntent = new Intent(context, OfferDisplayActivity.class);
+
+        /*notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+            Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            PendingIntent intent =
+            PendingIntent.getActivity(context, 0, notificationIntent, 0);*/
+
+        //notification.setLatestEventInfo(context, title, message, intent);
+                //通知の種類　音 バイブにしている時は鳴らない　
+        //notification.defaults = Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE ;
+        notification.flags =  Notification.FLAG_SHOW_LIGHTS | Notification.FLAG_AUTO_CANCEL ;
+        notification.ledOnMS = 100;
+        notification.ledOffMS = 100;
+        notification.ledARGB = Color.BLUE;
+
+        NotificationManager notificationManager =
+            (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(0, notification);
+    }
+
 
     public Activity getActivity() {
         return activity;
@@ -114,5 +139,13 @@ public class ActionHandler {
 
     public void setTts(TextToSpeech tts) {
         this.tts = tts;
+    }
+
+    public Context getContext() {
+        return context;
+    }
+
+    public void setContext(Context context) {
+        this.context = context;
     }
 }
