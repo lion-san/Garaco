@@ -57,7 +57,7 @@ public class ActionHandler {
                 break;
 
             case "light":
-                //doFlash();
+                doFlash();
                 break;
 
             case "wait":
@@ -94,13 +94,13 @@ public class ActionHandler {
         generateNotification("");
     }
 
-    private void generateNotification(String message) {
+    private void generateNotification(String param) {
 
         //システムトレイに通知するアイコン
        // int icon = R.drawable.ic_stat_gcm;
         long when = System.currentTimeMillis();
 
-        Notification notification = new Notification(0, message, when);
+        Notification notification = new Notification(0, "", when);
         //String title = context.getString(R.string.app_name);
 
               //ステータスバーをクリックした時に立ち上がるアクティビティ
@@ -115,13 +115,16 @@ public class ActionHandler {
                 //通知の種類　音 バイブにしている時は鳴らない　
         //notification.defaults = Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE ;
         notification.flags =  Notification.FLAG_SHOW_LIGHTS | Notification.FLAG_AUTO_CANCEL ;
-        notification.ledOnMS = 100;
-        notification.ledOffMS = 100;
+        notification.ledOnMS = 3000;
+        notification.ledOffMS = 1000;
         notification.ledARGB = Color.BLUE;
 
         NotificationManager notificationManager =
             (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(0, notification);
+
+        doWait("3");
+        notificationManager.cancel( 0 );
     }
 
 
