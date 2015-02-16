@@ -1,5 +1,6 @@
 package com.fujitsu.jp.garaco;
 
+import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -14,6 +15,7 @@ import android.view.View;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -29,6 +31,8 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
     private static final int REQUEST_CODE = 0;
 
     private TextToSpeech tts;
+
+    private ProgressDialog progressBar;
 
     @Override
     public void onInit(int status) {
@@ -54,6 +58,14 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
 
         //TTSの初期化
         tts = new TextToSpeech(getApplicationContext(), this);
+
+        //ぐるぐる
+        progressBar = new ProgressDialog(this);
+        progressBar.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressBar.setMessage("処理を実行中しています");
+        progressBar.setCancelable(true);
+
+
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -127,6 +139,10 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
      * executeRobot
      */
     private void executeRobot( String resultsString ){
+
+        //表示
+        progressBar.show();
+
         //Getリクエストの送信 for Garako
         //SendHttpRequest http = new SendHttpRequest();
         //String json_org = http.sendRequestToGarako(resultsString);
@@ -155,6 +171,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
 
             @Override
             protected void onPostExecute(String json_org) {
+                progressBar.dismiss();//消去
                 // トーストを使って結果を表示
                 //Toast.makeText(this.getActivity(), json_org, Toast.LENGTH_SHORT).show();
 
@@ -171,6 +188,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
                 //----------------------------------
                 //-- JSONの振り分け処理
                 //----------------------------------
+                boolean flg = false;
                 try {
                     JSONArray  jsons = new JSONArray(json_org);
 
@@ -191,17 +209,22 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
                             if(resultsString.equals( param )){
                                 //処理の実行
                                 act.executeAction(this.getActivity(), event.getJSONArray("actions"));
+                                flg = true;
                             }
                         }
                         else{//部分一致の場合
                             if(resultsString.indexOf(param) != -1){
                                 //処理の実行
                                 act.executeAction(this.getActivity(), event.getJSONArray("actions"));
+                                flg = true;
                             }
 
                         }
 
                     }
+
+                    if( !flg )
+                        Toast.makeText(this.getActivity(), "何も該当しませんでした。", Toast.LENGTH_SHORT).show();
 
                 } catch (JSONException e) {
                     e.printStackTrace();

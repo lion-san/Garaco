@@ -68,7 +68,7 @@ public class ActionHandler {
     private void doWait( String param ){
 
         try {
-            Thread.sleep( Integer.parseInt(param) );
+            Thread.sleep( Integer.parseInt(param) * 1000 );
             Toast.makeText(activity, param+"秒待ちます", Toast.LENGTH_LONG).show();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -78,7 +78,7 @@ public class ActionHandler {
 
     private void doTalk( String param){
 
-        tts.speak(param, TextToSpeech.QUEUE_FLUSH, null);
+        tts.speak(param, TextToSpeech.QUEUE_ADD, null);
         Toast.makeText(activity, param, Toast.LENGTH_SHORT).show();
 
     }
