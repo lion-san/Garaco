@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.speech.RecognizerIntent;
+import android.speech.tts.TextToSpeech;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -20,10 +21,23 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements TextToSpeech.OnInitListener {
 
     // = 0 の部分は、適当な値に変更してください（とりあえず試すには問題ないですが）
-    private static final int REQUEST_CODE = 0;;
+    private static final int REQUEST_CODE = 0;
+
+    private TextToSpeech tts;
+
+    @Override
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+            String ready = "準備OKです";
+            tts.speak(ready, TextToSpeech.QUEUE_FLUSH, null);
+            Toast.makeText(this, ready, Toast.LENGTH_SHORT).show();
+        } else {
+
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +46,9 @@ public class MainActivity extends ActionBarActivity {
 
         //ボタンの押した動作
         Button button = (Button) findViewById(R.id.talk);
+
+        //TTSの初期化
+        tts = new TextToSpeech(getApplicationContext(), this);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -136,6 +153,7 @@ public class MainActivity extends ActionBarActivity {
                 String resultsString = this.getParam();
 
                 ActionHandler act = new ActionHandler();
+                act.setTts(this.getTts());
 
                 //----------------------------------
                 //-- JSONの振り分け処理
@@ -182,6 +200,7 @@ public class MainActivity extends ActionBarActivity {
         };
         task.execute( resultsString );
         task.setActivity(this);
+        task.setTts( this.tts );
 
      }
 
@@ -207,5 +226,11 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        tts.shutdown();
     }
 }

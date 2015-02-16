@@ -16,6 +16,7 @@ import org.json.JSONObject;
 public class ActionHandler {
 
     private Activity activity;
+    private TextToSpeech tts;
 
     /**
      * 処理の実行
@@ -50,7 +51,7 @@ public class ActionHandler {
                 break;
 
             case "light":
-                doFlash();
+                //doFlash();
                 break;
 
             case "wait":
@@ -69,8 +70,7 @@ public class ActionHandler {
 
     private void doTalk( String param){
 
-        ///TextToSpeech tts = new TextToSpeech(activity, activity);
-        //tts.speak(param, TextToSpeech.QUEUE_FLUSH, null, null);
+        tts.speak(param, TextToSpeech.QUEUE_FLUSH, null);
 
     }
 
@@ -89,5 +89,21 @@ public class ActionHandler {
         params.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
         //パラメータ設定
         camera.setParameters(params);
+    }
+
+    public Activity getActivity() {
+        return activity;
+    }
+
+    public void setActivity(Activity activity) {
+        this.activity = activity;
+    }
+
+    public TextToSpeech getTts() {
+        return tts;
+    }
+
+    public void setTts(TextToSpeech tts) {
+        this.tts = tts;
     }
 }
