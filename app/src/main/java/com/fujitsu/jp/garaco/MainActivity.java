@@ -156,7 +156,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
             @Override
             protected void onPostExecute(String json_org) {
                 // トーストを使って結果を表示
-                Toast.makeText(this.getActivity(), json_org, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this.getActivity(), json_org, Toast.LENGTH_SHORT).show();
 
                 //WebView webView = (WebView) findViewById(R.id.webView);
                 //webView.loadUrl(url);
