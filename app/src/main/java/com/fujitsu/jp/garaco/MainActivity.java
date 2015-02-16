@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -32,7 +33,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
             String ready = "準備OKです";
-            tts.speak(ready, TextToSpeech.QUEUE_FLUSH, null);
+            //tts.speak(ready, TextToSpeech.QUEUE_FLUSH, null);
             Toast.makeText(this, ready, Toast.LENGTH_SHORT).show();
         } else {
 
@@ -47,6 +48,9 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
         //ボタンの押した動作
         Button button = (Button) findViewById(R.id.talk);
 
+        //テストの押した動作
+        Button send = (Button) findViewById(R.id.send);
+
         //TTSの初期化
         tts = new TextToSpeech(getApplicationContext(), this);
 
@@ -54,10 +58,6 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
             @Override
             public void onClick(View v) {
 
-                //テストコード
-                executeRobot("こんにちは");
-
-/*
                 try {
                     // インテント作成
                     Intent intent = new Intent(
@@ -77,7 +77,17 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
                     // このインテントに応答できるアクティビティがインストールされていない場合
                     Toast.makeText(MainActivity.this,
                             "ActivityNotFoundException", Toast.LENGTH_LONG).show();
-                }*/
+                }
+            }
+        });
+
+        //ボタン用
+        send.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//テストの押した動作
+                EditText txt = (EditText) findViewById(R.id.txt1);
+                executeRobot( txt.toString() );
             }
         });
     }

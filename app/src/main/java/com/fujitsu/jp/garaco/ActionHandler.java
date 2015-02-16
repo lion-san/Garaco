@@ -44,7 +44,7 @@ public class ActionHandler {
         switch ( action ){
 
             case "talk":
-                doTalk( param );
+                doTalk(param);
                 break;
 
             case "camera":
@@ -55,6 +55,7 @@ public class ActionHandler {
                 break;
 
             case "wait":
+                doWait( param );
                 break;
 
             default:
@@ -65,6 +66,13 @@ public class ActionHandler {
     }
 
     private void doWait( String param ){
+
+        try {
+            Thread.sleep( Integer.parseInt(param) );
+            Toast.makeText(activity, param+"秒待ちます", Toast.LENGTH_LONG).show();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 
