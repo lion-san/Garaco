@@ -19,7 +19,8 @@ public class SendHttpRequest {
 
         HttpClient httpClient = new DefaultHttpClient();
 
-        StringBuilder uri = new StringBuilder("http://ec2-54-65-250-88.ap-northeast-1.compute.amazonaws.com/python/querygyarako.py?foo=" + msg);
+        //StringBuilder uri = new StringBuilder("http://ec2-54-65-250-88.ap-northeast-1.compute.amazonaws.com/python/querygyarako.py?foo=" + msg);
+        StringBuilder uri = new StringBuilder("https://limitless-sands-8750.herokuapp.com/events.json");
         HttpGet request = new HttpGet(uri.toString());
 
         HttpResponse httpResponse = null;
