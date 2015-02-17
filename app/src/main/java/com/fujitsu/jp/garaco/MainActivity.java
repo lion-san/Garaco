@@ -1,29 +1,47 @@
 package com.fujitsu.jp.garaco;
 
+import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.Camera;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
-
+import android.hardware.Camera.Face;
+import android.hardware.Camera.FaceDetectionListener;
+import android.view.WindowManager.LayoutParams;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity implements TextToSpeech.OnInitListener {
@@ -37,6 +55,12 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
     private ProgressDialog progressBar;
 
     private ActionHandler act;
+
+    /** カメラのハードウェアを操作する {@link Camera} クラスです。 */
+    private Camera mCamera;
+    /** カメラのプレビューを表示する {@link SurfaceView} です。 */
+    private SurfaceView mView;
+    private CameraOverlayView mCameraOverlayView;
 
     @Override
     public void onInit(int status) {
@@ -72,6 +96,11 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
         progressBar.setMessage("処理を実行中しています");
         progressBar.setCancelable(true);
 
+        //カメラ
+        mView = new SurfaceView(this);
+        setContentView(mView);
+        mCameraOverlayView = new CameraOverlayView(this);
+        addContentView(mCameraOverlayView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
 
         button.setOnClickListener(new View.OnClickListener() {
@@ -172,9 +201,10 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
                     return json_org;
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Toast.makeText(this.getActivity(), "Network Busy!", Toast.LENGTH_SHORT).show();
-                    return null;
+                    //Toast.makeText(this.getActivity(), "Network Busy!", Toast.LENGTH_SHORT).show();
+
                 }
+                return null;
             }
 
             @Override
@@ -243,14 +273,159 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
 
             }
         };
-        task.execute( resultsString );
+
         task.setActivity(this);
         task.setTts( this.tts );
         //アクションハンドラの生成
         act = new ActionHandler( this );
+        act.setmCam( mCamera );
 
+        task.execute( resultsString );
      }
 
+
+//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        SurfaceHolder holder = mView.getHolder();
+        holder.addCallback(surfaceHolderCallback);
+    }
+
+    /** カメラのコールバックです。 */
+    private SurfaceHolder.Callback surfaceHolderCallback = new SurfaceHolder.Callback() {
+
+        @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+        @Override
+        public void surfaceCreated(SurfaceHolder holder) {
+
+            try {
+                // 生成されたとき
+                mCamera = Camera.open(1);
+                // リスナをセット
+                mCamera.setFaceDetectionListener(faceDetectionListener);
+                // 顔検出の開始
+                mCamera.startFaceDetection();
+
+                // プレビューをセットする
+                mCamera.setPreviewDisplay(holder);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        private FaceDetectionListener faceDetectionListener = new FaceDetectionListener() {
+            @Override
+            public void onFaceDetection(Face[] faces, Camera camera) {
+                Log.d("onFaceDetection", "顔検出数:" + faces.length);
+                // View に渡す
+                mCameraOverlayView.setFaces(faces);
+
+                if(faces.length > 0){
+                    tts.speak("侵入者を検知しました", TextToSpeech.QUEUE_FLUSH, null);
+                    // 画像取得
+                    mCamera.takePicture(null, null, mPicJpgListener);
+
+                }
+            }
+        };
+
+
+
+        @Override
+        public void surfaceChanged(SurfaceHolder holder, int format, int width,
+                                   int height) {
+            // 変更されたとき
+            Camera.Parameters parameters = mCamera.getParameters();
+            List<Camera.Size> previewSizes = parameters.getSupportedPreviewSizes();
+            Camera.Size previewSize = previewSizes.get(0);
+            //parameters.setPreviewSize(previewSize.width, previewSize.height);
+            parameters.setPreviewSize(640, 480);
+            // width, heightを変更する
+            mCamera.setParameters(parameters);
+            mCamera.startPreview();
+        }
+
+        @Override
+        public void surfaceDestroyed(SurfaceHolder holder) {
+            // 破棄されたとき
+            mCamera.release();
+            mCamera = null;
+        }
+
+    };
+
+    /**
+     * JPEG データ生成完了時のコールバック
+     */
+    private Camera.PictureCallback mPicJpgListener = new Camera.PictureCallback() {
+        public void onPictureTaken(byte[] data, Camera camera) {
+            if (data == null) {
+                return;
+            }
+
+            String saveDir = Environment.getExternalStorageDirectory().getPath() + "/garaco";
+
+            // SD カードフォルダを取得
+            File file = new File(saveDir);
+
+            // フォルダ作成
+            if (!file.exists()) {
+                if (!file.mkdir()) {
+                    Log.e("Debug", "Make Dir Error");
+                }
+            }
+
+            // 画像保存パス
+            Calendar cal = Calendar.getInstance();
+            SimpleDateFormat sf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+            String imgPath = saveDir + "/" + sf.format(cal.getTime()) + ".jpg";
+
+            // ファイル保存
+            FileOutputStream fos;
+            try {
+                fos = new FileOutputStream(imgPath, true);
+                fos.write(data);
+                fos.close();
+
+                // アンドロイドのデータベースへ登録
+                // (登録しないとギャラリーなどにすぐに反映されないため)
+                registAndroidDB(imgPath);
+
+            } catch (Exception e) {
+                Log.e("Debug", e.getMessage());
+            }
+
+            fos = null;
+
+            // takePicture するとプレビューが停止するので、再度プレビュースタート
+            //mCam.startPreview();
+
+            // mIsTake = false;
+        }
+    };
+
+    /**
+     * アンドロイドのデータベースへ画像のパスを登録
+     * @param path 登録するパス
+     */
+    private void registAndroidDB(String path) {
+        // アンドロイドのデータベースへ登録
+        // (登録しないとギャラリーなどにすぐに反映されないため)
+        ContentValues values = new ContentValues();
+        ContentResolver contentResolver = context.getContentResolver();
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        values.put("_data", path);
+        contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+    }
+
+
+//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
 
 
     @Override
@@ -279,6 +454,6 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
     protected void onDestroy() {
         super.onDestroy();
         tts.shutdown();
-        act.cameraDestroy();
+        //mCamera.release();
     }
 }

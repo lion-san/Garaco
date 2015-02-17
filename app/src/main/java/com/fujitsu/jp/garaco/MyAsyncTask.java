@@ -14,11 +14,16 @@ public class MyAsyncTask extends AsyncTask<String, Void, String> {
     private TextToSpeech tts;
 
 
-
+    /**
+     * コンストラクタ
+     */
     public MyAsyncTask() {
 
     }
 
+    /*
+
+     */
     protected String doInBackground(String... params) {
         return "";
     }

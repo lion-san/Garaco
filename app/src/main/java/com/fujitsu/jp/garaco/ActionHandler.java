@@ -40,13 +40,6 @@ public class ActionHandler {
      */
     public ActionHandler(Activity activity) {
         this.activity = activity;
-
-        // カメラインスタンスの取得
-        try {
-            mCam = Camera.open();
-        } catch (Exception e) {
-            // エラー
-        }
     }
 
     /**
@@ -124,8 +117,20 @@ public class ActionHandler {
     }
 
     private void doCamera( ){
-        // 画像取得
-        mCam.takePicture(null, null, mPicJpgListener);
+        // 明示的なインテントの生成
+        //Intent intent = new Intent(activity, Hello.class);
+
+        // アクティビティの呼び出し
+        //activity.startActivity(intent);
+
+
+        try {
+            // 画像取得
+            mCam.takePicture(null, null, mPicJpgListener);
+        }
+            catch (Exception e){
+                e.printStackTrace();
+            }
     }
 
     /**
@@ -270,5 +275,13 @@ public class ActionHandler {
 
     public void setContext(Context context) {
         this.context = context;
+    }
+
+    public Camera getmCam() {
+        return mCam;
+    }
+
+    public void setmCam(Camera mCam) {
+        this.mCam = mCam;
     }
 }

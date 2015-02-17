@@ -2,12 +2,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.fujitsu.jp.garaco" >
 
+    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="19" />
+
     //接続を許可
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <uses-permission android:name="android.permission.CAMERA" />
+
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.flash" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
 
     <application
         android:allowBackup="true"
@@ -23,6 +28,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".Hello" android:screenOrientation="landscape" />
+        <activity android:name=".CameraActivity" android:screenOrientation="landscape" />
     </application>
 
 </manifest>
