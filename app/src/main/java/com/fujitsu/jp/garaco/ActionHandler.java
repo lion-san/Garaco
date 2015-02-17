@@ -3,17 +3,27 @@ package com.fujitsu.jp.garaco;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 /**
  * Created by clotcr_22 on 2015/02/16.
@@ -23,6 +33,21 @@ public class ActionHandler {
     private Activity activity;
     private Context context;
     private TextToSpeech tts;
+    private Camera mCam;
+
+    /**
+     * コンストラクタ
+     */
+    public ActionHandler(Activity activity) {
+        this.activity = activity;
+
+        // カメラインスタンスの取得
+        try {
+            mCam = Camera.open();
+        } catch (Exception e) {
+            // エラー
+        }
+    }
 
     /**
      * 処理の実行
@@ -54,6 +79,7 @@ public class ActionHandler {
                 break;
 
             case "camera":
+                doCamera();
                 break;
 
             case "light":
@@ -71,6 +97,10 @@ public class ActionHandler {
 
     }
 
+    /**
+     *
+     * @param param
+     */
     private void doWait( String param ){
 
         try {
@@ -82,6 +112,10 @@ public class ActionHandler {
 
     }
 
+    /**
+     *
+     * @param param
+     */
     private void doTalk( String param){
 
         tts.speak(param, TextToSpeech.QUEUE_ADD, null);
@@ -89,17 +123,28 @@ public class ActionHandler {
 
     }
 
+    private void doCamera( ){
+        // 画像取得
+        mCam.takePicture(null, null, mPicJpgListener);
+    }
+
+    /**
+     *
+     */
     private void doFlash(){
 
         generateNotification("");
     }
 
+    /**
+     *
+     * @param param
+     */
     private void generateNotification(String param) {
 
         //システムトレイに通知するアイコン
        // int icon = R.drawable.ic_stat_gcm;
         long when = System.currentTimeMillis();
-
         Notification notification = new Notification(0, "", when);
         //String title = context.getString(R.string.app_name);
 
@@ -127,6 +172,81 @@ public class ActionHandler {
         notificationManager.cancel( 0 );
     }
 
+    /**
+     * JPEG データ生成完了時のコールバック
+     */
+    private Camera.PictureCallback mPicJpgListener = new Camera.PictureCallback() {
+        public void onPictureTaken(byte[] data, Camera camera) {
+            if (data == null) {
+                return;
+            }
+
+            String saveDir = Environment.getExternalStorageDirectory().getPath() + "/garacot";
+
+            // SD カードフォルダを取得
+            File file = new File(saveDir);
+
+            // フォルダ作成
+            if (!file.exists()) {
+                if (!file.mkdir()) {
+                    Log.e("Debug", "Make Dir Error");
+                }
+            }
+
+            // 画像保存パス
+            Calendar cal = Calendar.getInstance();
+            SimpleDateFormat sf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+            String imgPath = saveDir + "/" + sf.format(cal.getTime()) + ".jpg";
+
+            // ファイル保存
+            FileOutputStream fos;
+            try {
+                fos = new FileOutputStream(imgPath, true);
+                fos.write(data);
+                fos.close();
+
+                // アンドロイドのデータベースへ登録
+                // (登録しないとギャラリーなどにすぐに反映されないため)
+                registAndroidDB(imgPath);
+
+            } catch (Exception e) {
+                Log.e("Debug", e.getMessage());
+            }
+
+            fos = null;
+
+            // takePicture するとプレビューが停止するので、再度プレビュースタート
+            //mCam.startPreview();
+
+           // mIsTake = false;
+        }
+    };
+
+    /**
+     * アンドロイドのデータベースへ画像のパスを登録
+     * @param path 登録するパス
+     */
+    private void registAndroidDB(String path) {
+        // アンドロイドのデータベースへ登録
+        // (登録しないとギャラリーなどにすぐに反映されないため)
+        ContentValues values = new ContentValues();
+        ContentResolver contentResolver = context.getContentResolver();
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        values.put("_data", path);
+        contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+    }
+
+
+    /**
+     *
+     */
+    protected void cameraDestroy() {
+
+        if (mCam != null) {
+            mCam.release();
+            mCam = null;
+        }
+    }
 
     public Activity getActivity() {
         return activity;

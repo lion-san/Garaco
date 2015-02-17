@@ -36,6 +36,8 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
 
     private ProgressDialog progressBar;
 
+    private ActionHandler act;
+
     @Override
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
@@ -167,7 +169,6 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
 
                     progressBar.dismiss();//消去
 
-
                     return json_org;
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -189,7 +190,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
 
                 String resultsString = this.getParam();
 
-                ActionHandler act = new ActionHandler();
+
                 act.setTts(this.getTts());
                 act.setContext( context );
 
@@ -245,6 +246,8 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
         task.execute( resultsString );
         task.setActivity(this);
         task.setTts( this.tts );
+        //アクションハンドラの生成
+        act = new ActionHandler( this );
 
      }
 
@@ -276,5 +279,6 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
     protected void onDestroy() {
         super.onDestroy();
         tts.shutdown();
+        act.cameraDestroy();
     }
 }
