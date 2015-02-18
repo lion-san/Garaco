@@ -35,7 +35,7 @@ public class ActionHandler {
     private TextToSpeech tts;
     private Camera mCam;
 
-    private Boolean face_ditect;
+    private Boolean face_ditect = false;
 
     /**
      * コンストラクタ
@@ -44,7 +44,7 @@ public class ActionHandler {
         this.activity = activity;
     }
 
-    protected void analyzeJson( String resultsString, String json_org ){
+    synchronized protected void analyzeJson( String resultsString, String json_org ){
 
         Boolean flg = false;
 
@@ -152,7 +152,7 @@ public class ActionHandler {
      *
      * @param param
      */
-    private void doWait( String param ){
+    synchronized private void doWait( String param ){
 
         try {
             Thread.sleep( Integer.parseInt(param) * 1000 );
@@ -167,14 +167,14 @@ public class ActionHandler {
      *
      * @param param
      */
-    private void doTalk( String param){
+    synchronized private void doTalk( String param){
 
         tts.speak(param, TextToSpeech.QUEUE_ADD, null);
         Toast.makeText(activity, param, Toast.LENGTH_SHORT).show();
 
     }
 
-    private void doCamera( ){
+    synchronized private void doCamera( ){
         // 明示的なインテントの生成
         //Intent intent = new Intent(activity, Hello.class);
 
@@ -194,7 +194,7 @@ public class ActionHandler {
     /**
      *
      */
-    private void doFlash(){
+    synchronized private void doFlash(){
 
         generateNotification("");
     }

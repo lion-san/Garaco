@@ -41,6 +41,7 @@ import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 
@@ -58,6 +59,8 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
 
     private MyAsyncTask task;
     private String res = null;
+
+    private Date lasttime = null;
 
 
 
@@ -215,8 +218,8 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
 
             @Override
             protected void onPostExecute(String json_org) {
-                String ready = "イニシャライズド";
-                //tts.speak(ready, TextToSpeech.QUEUE_FLUSH, null);
+                String ready = "ロボナイゼーション。イニシャライズド";
+                tts.speak(ready, TextToSpeech.QUEUE_FLUSH, null);
                 Toast.makeText(this.getActivity(), ready, Toast.LENGTH_SHORT).show();
 
             }
@@ -307,7 +310,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
         task.setActivity(this);
         task.setTts( this.tts );
         //アクションハンドラの生成
-        act = new ActionHandler( this );
+        //act = new ActionHandler( this );
         act.setContext(context);
         act.setmCam( mCamera );
 
@@ -359,16 +362,35 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
                 // View に渡す
                 //mCameraOverlayView.setFaces(faces);
 
+
                 if(faces.length > 0){
-                    if( !act.getFace_ditect() ) {
-                        act.setFace_ditect( true );
+
+                    lasttime = null;
+
+                    if (!act.getFace_ditect()) {
+
+                        act.setFace_ditect(true);
                         //tts.speak("侵入者を検知しました", TextToSpeech.QUEUE_FLUSH, null);
                         // 画像取得
                         //mCamera.takePicture(null, null, mPicJpgListener);
                         executeRobot(StaticParams.FACE_DETECT);
-                        act.setFace_ditect( false );
+
+                        lasttime = null;
                     }
                 }
+                else{
+                    if(lasttime == null )
+                        lasttime = new Date();
+
+                    //検知ゼロが指定ミリ秒以上続くまで、処理しない
+                    else if ( ((new Date()).getTime() - lasttime.getTime() > 10000)){
+                        act.setFace_ditect(false);//フラグをもどす
+                        if( lasttime != null){
+                        long a = (( new Date()).getTime() - lasttime.getTime());
+                        Log.d("#######################", "時間（ミリ秒）"+ a);}
+                    }
+                }
+
             }
         };
 
