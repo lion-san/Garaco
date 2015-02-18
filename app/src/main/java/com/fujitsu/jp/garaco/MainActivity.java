@@ -56,6 +56,11 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
 
     private ActionHandler act;
 
+    private MyAsyncTask task;
+    private String res = null;
+
+
+
     /** カメラのハードウェアを操作する {@link Camera} クラスです。 */
     private Camera mCamera;
     /** カメラのプレビューを表示する {@link SurfaceView} です。 */
@@ -65,9 +70,9 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
     @Override
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
-            String ready = "準備OKです";
+            //String ready = "準備OKです";
             //tts.speak(ready, TextToSpeech.QUEUE_FLUSH, null);
-            Toast.makeText(this, ready, Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, ready, Toast.LENGTH_SHORT).show();
         } else {
 
         }
@@ -97,10 +102,20 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
         progressBar.setCancelable(true);
 
         //カメラ
-        mView = new SurfaceView(this);
-        setContentView(mView);
+        mView = (SurfaceView) findViewById(R.id.surfaceView);
+        //mView = new SurfaceView(this);
+        //setContentView(mView);//ここでActivityに設定してしまうので、SurfaceViewのみに設定する
+        //SurfaceHolder holder = mView.getHolder();
+        //holder.addCallback(surfaceHolderCallback);
+        //holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+
+        //顔検知用重畳ビュー
         mCameraOverlayView = new CameraOverlayView(this);
         addContentView(mCameraOverlayView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+
+
+        //Robotプログラムスタート
+        initRobot();
 
 
         button.setOnClickListener(new View.OnClickListener() {
@@ -171,6 +186,61 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
         }
     }
 
+
+    private void initRobot ( ){
+        // サブスレッドで実行するタスクを作成
+        task = new MyAsyncTask() {
+            @Override
+            protected String doInBackground(String... params) {
+                String resultsString = params[0];
+                try {
+                    // Twitter フォロー実行
+                    SendHttpRequest http = new SendHttpRequest();
+                    String json_org = http.sendRequestToGarako("");
+
+                    res = json_org;//インスタンス変数にＪＳＯＮ(命令セット)をセット
+
+                    this.setParam(resultsString);
+
+                    progressBar.dismiss();//消去
+
+                    return json_org;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    //Toast.makeText(this.getActivity(), "Network Busy!", Toast.LENGTH_SHORT).show();
+
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(String json_org) {
+                String ready = "イニシャライズド";
+                //tts.speak(ready, TextToSpeech.QUEUE_FLUSH, null);
+                Toast.makeText(this.getActivity(), ready, Toast.LENGTH_SHORT).show();
+
+            }
+        };
+
+        try {
+
+            //アクションハンドラの生成
+            act = new ActionHandler(this);
+
+            task.setActivity(this);
+            task.setTts(this.tts);
+            act.setmCam(mCamera);
+            act.setContext(context);
+
+            //非同期処理開始
+            task.execute("");
+        }catch( Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+
     /**
      * executeRobot
      */
@@ -185,26 +255,27 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
 
 
         // サブスレッドで実行するタスクを作成
-        MyAsyncTask task = new MyAsyncTask() {
+        task = new MyAsyncTask() {
             @Override
             protected String doInBackground(String... params) {
                 String resultsString = params[0];
                 try {
-                    // Twitter フォロー実行
-                    SendHttpRequest http = new SendHttpRequest();
-                    String json_org = http.sendRequestToGarako(resultsString);
 
-                    this.setParam( resultsString );
+                    if(res == null) {
 
-                    progressBar.dismiss();//消去
-
-                    return json_org;
+                        // Twitter フォロー実行
+                        SendHttpRequest http = new SendHttpRequest();
+                        String json_org = http.sendRequestToGarako(resultsString);
+                        res = json_org;
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     //Toast.makeText(this.getActivity(), "Network Busy!", Toast.LENGTH_SHORT).show();
 
                 }
-                return null;
+                progressBar.dismiss();//消去
+                this.setParam(resultsString);
+                return res;
             }
 
             @Override
@@ -222,54 +293,13 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
 
 
                 act.setTts(this.getTts());
-                act.setContext( context );
+                //act.setContext(context);
 
                 //----------------------------------
                 //-- JSONの振り分け処理
                 //----------------------------------
-                boolean flg = false;
-                try {
-                    JSONArray  jsons = new JSONArray(json_org);
 
-                    for (int i = 0; i < jsons.length(); i++) {
-                        // 予報情報を取得
-                        JSONObject event = jsons.getJSONObject(i);
-                        // Event
-                        String e = event.getString("event");
-                        // Operator
-                        String operator = event.getString("operator");
-                        // 条件
-                        String param = event.getString("param");
-
-
-                        //条件の検査
-                        if( operator.equals("==")){//完全一致の場合
-
-                            if(resultsString.equals( param )){
-                                //処理の実行
-                                act.executeAction(this.getActivity(), event.getJSONArray("actions"));
-                                flg = true;
-                            }
-                        }
-                        else{//部分一致の場合
-                            if(resultsString.indexOf(param) != -1){
-                                //処理の実行
-                                act.executeAction(this.getActivity(), event.getJSONArray("actions"));
-                                flg = true;
-                            }
-
-                        }
-
-                    }
-
-                    if( !flg )
-                        Toast.makeText(this.getActivity(), "何も該当しませんでした。", Toast.LENGTH_SHORT).show();
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    Toast.makeText(this.getActivity(), "Network Busy!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                act.analyzeJson(resultsString, json_org);
 
             }
         };
@@ -278,6 +308,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
         task.setTts( this.tts );
         //アクションハンドラの生成
         act = new ActionHandler( this );
+        act.setContext(context);
         act.setmCam( mCamera );
 
         task.execute( resultsString );
@@ -285,14 +316,17 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
 
 
 //--------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------
+//--- Camera -----------------------------------------------------------------------------
 //--------------------------------------------------------------------------------
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
+
+        //コールバック関数をセット
         SurfaceHolder holder = mView.getHolder();
         holder.addCallback(surfaceHolderCallback);
+        holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
     /** カメラのコールバックです。 */
@@ -305,13 +339,14 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
             try {
                 // 生成されたとき
                 mCamera = Camera.open(1);
-                // リスナをセット
+
+                // リスナをセット  // 顔検出の開始
                 mCamera.setFaceDetectionListener(faceDetectionListener);
-                // 顔検出の開始
                 mCamera.startFaceDetection();
 
                 // プレビューをセットする
                 mCamera.setPreviewDisplay(holder);
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -322,18 +357,20 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
             public void onFaceDetection(Face[] faces, Camera camera) {
                 Log.d("onFaceDetection", "顔検出数:" + faces.length);
                 // View に渡す
-                mCameraOverlayView.setFaces(faces);
+                //mCameraOverlayView.setFaces(faces);
 
                 if(faces.length > 0){
-                    tts.speak("侵入者を検知しました", TextToSpeech.QUEUE_FLUSH, null);
-                    // 画像取得
-                    mCamera.takePicture(null, null, mPicJpgListener);
-
+                    if( !act.getFace_ditect() ) {
+                        act.setFace_ditect( true );
+                        //tts.speak("侵入者を検知しました", TextToSpeech.QUEUE_FLUSH, null);
+                        // 画像取得
+                        //mCamera.takePicture(null, null, mPicJpgListener);
+                        executeRobot(StaticParams.FACE_DETECT);
+                        act.setFace_ditect( false );
+                    }
                 }
             }
         };
-
-
 
         @Override
         public void surfaceChanged(SurfaceHolder holder, int format, int width,
@@ -342,8 +379,8 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
             Camera.Parameters parameters = mCamera.getParameters();
             List<Camera.Size> previewSizes = parameters.getSupportedPreviewSizes();
             Camera.Size previewSize = previewSizes.get(0);
-            //parameters.setPreviewSize(previewSize.width, previewSize.height);
-            parameters.setPreviewSize(640, 480);
+            parameters.setPreviewSize(previewSize.width, previewSize.height);
+            //parameters.setPreviewSize(640, 480);
             // width, heightを変更する
             mCamera.setParameters(parameters);
             mCamera.startPreview();
@@ -402,7 +439,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
             fos = null;
 
             // takePicture するとプレビューが停止するので、再度プレビュースタート
-            //mCam.startPreview();
+            mCamera.startPreview();
 
             // mIsTake = false;
         }

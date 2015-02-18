@@ -35,12 +35,70 @@ public class ActionHandler {
     private TextToSpeech tts;
     private Camera mCam;
 
+    private Boolean face_ditect;
+
     /**
      * コンストラクタ
      */
     public ActionHandler(Activity activity) {
         this.activity = activity;
     }
+
+    protected void analyzeJson( String resultsString, String json_org ){
+
+        Boolean flg = false;
+
+        try{
+
+            JSONArray jsons = new JSONArray(json_org);
+
+            for (int i = 0; i < jsons.length(); i++) {
+                // 予報情報を取得
+                JSONObject event = jsons.getJSONObject(i);
+                // Event
+                String e = event.getString("event");
+                // Operator
+                String operator = event.getString("operator");
+                // 条件
+                String param = event.getString("param");
+
+
+                //条件の検査
+                if( operator.equals("==")){//完全一致の場合
+
+                    if(resultsString.equals( param )){
+                        //処理の実行
+                        this.executeAction(this.getActivity(), event.getJSONArray("actions"));
+                        flg = true;
+                    }
+                }
+                else if((param.equals(StaticParams.FACE_DETECT) && (face_ditect))){//顔検知の場合
+                    //処理の実行
+                    this.executeAction(this.getActivity(), event.getJSONArray("actions"));
+                    flg = true;
+                }
+                else{//部分一致の場合
+                    if(resultsString.indexOf(param) != -1){
+                        //処理の実行
+                        this.executeAction(this.getActivity(), event.getJSONArray("actions"));
+                        flg = true;
+                    }
+
+                }
+
+
+            }
+
+            if( !flg )
+                Toast.makeText(activity, "何も該当しませんでした。", Toast.LENGTH_SHORT).show();
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Toast.makeText(activity, "Network Busy!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+    }
+
 
     /**
      * 処理の実行
@@ -181,12 +239,12 @@ public class ActionHandler {
      * JPEG データ生成完了時のコールバック
      */
     private Camera.PictureCallback mPicJpgListener = new Camera.PictureCallback() {
-        public void onPictureTaken(byte[] data, Camera camera) {
+        synchronized  public void onPictureTaken(byte[] data, Camera camera) {
             if (data == null) {
                 return;
             }
 
-            String saveDir = Environment.getExternalStorageDirectory().getPath() + "/garacot";
+            String saveDir = Environment.getExternalStorageDirectory().getPath() + "/garaco";
 
             // SD カードフォルダを取得
             File file = new File(saveDir);
@@ -221,7 +279,7 @@ public class ActionHandler {
             fos = null;
 
             // takePicture するとプレビューが停止するので、再度プレビュースタート
-            //mCam.startPreview();
+            mCam.startPreview();
 
            // mIsTake = false;
         }
@@ -283,5 +341,13 @@ public class ActionHandler {
 
     public void setmCam(Camera mCam) {
         this.mCam = mCam;
+    }
+
+    public Boolean getFace_ditect() {
+        return face_ditect;
+    }
+
+    public void setFace_ditect(Boolean face_ditect) {
+        this.face_ditect = face_ditect;
     }
 }
