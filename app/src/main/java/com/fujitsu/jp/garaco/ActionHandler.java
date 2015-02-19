@@ -7,6 +7,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.hardware.Camera;
 import android.os.Bundle;
@@ -141,6 +142,10 @@ public class ActionHandler {
                 doWait( param );
                 break;
 
+            case "application":
+                doApplication(param);
+                break;
+
             default:
                 break;
         }
@@ -175,12 +180,6 @@ public class ActionHandler {
     }
 
     synchronized private void doCamera( ){
-        // 明示的なインテントの生成
-        //Intent intent = new Intent(activity, Hello.class);
-
-        // アクティビティの呼び出し
-        //activity.startActivity(intent);
-
 
         try {
             // 画像取得
@@ -198,6 +197,22 @@ public class ActionHandler {
 
         generateNotification("");
     }
+
+
+    synchronized private void doApplication( String param ){
+
+        PackageManager pm = activity.getPackageManager();
+        Intent intent = pm.getLaunchIntentForPackage(param);
+
+        try {
+            activity.startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(activity, "対象のアプリがありません", Toast.LENGTH_SHORT).show();
+        }
+
+
+    }
+
 
     /**
      *
