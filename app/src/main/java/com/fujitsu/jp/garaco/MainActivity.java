@@ -401,8 +401,8 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
             Camera.Parameters parameters = mCamera.getParameters();
             List<Camera.Size> previewSizes = parameters.getSupportedPreviewSizes();
             Camera.Size previewSize = previewSizes.get(0);
-            parameters.setPreviewSize(previewSize.width, previewSize.height);
-            //parameters.setPreviewSize(640, 480);
+            //parameters.setPreviewSize(previewSize.width, previewSize.height);
+            parameters.setPreviewSize(640, 480);
             // width, heightを変更する
             mCamera.setParameters(parameters);
             mCamera.startPreview();
