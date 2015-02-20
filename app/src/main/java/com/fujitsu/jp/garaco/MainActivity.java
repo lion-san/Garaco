@@ -8,10 +8,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Camera;
-import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.ActionBarActivity;
@@ -23,24 +20,13 @@ import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.hardware.Camera.Face;
 import android.hardware.Camera.FaceDetectionListener;
 import android.view.WindowManager.LayoutParams;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -252,11 +238,6 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
         //表示
         progressBar.show();
 
-        //Getリクエストの送信 for Garako
-        //SendHttpRequest http = new SendHttpRequest();
-        //String json_org = http.sendRequestToGarako(resultsString);
-
-
         // サブスレッドで実行するタスクを作成
         task = new MyAsyncTask() {
             @Override
@@ -416,70 +397,6 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
         }
 
     };
-
-    /**
-     * JPEG データ生成完了時のコールバック
-     */
-    private Camera.PictureCallback mPicJpgListener = new Camera.PictureCallback() {
-        public void onPictureTaken(byte[] data, Camera camera) {
-            if (data == null) {
-                return;
-            }
-
-            String saveDir = Environment.getExternalStorageDirectory().getPath() + "/garaco";
-
-            // SD カードフォルダを取得
-            File file = new File(saveDir);
-
-            // フォルダ作成
-            if (!file.exists()) {
-                if (!file.mkdir()) {
-                    Log.e("Debug", "Make Dir Error");
-                }
-            }
-
-            // 画像保存パス
-            Calendar cal = Calendar.getInstance();
-            SimpleDateFormat sf = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            String imgPath = saveDir + "/" + sf.format(cal.getTime()) + ".jpg";
-
-            // ファイル保存
-            FileOutputStream fos;
-            try {
-                fos = new FileOutputStream(imgPath, true);
-                fos.write(data);
-                fos.close();
-
-                // アンドロイドのデータベースへ登録
-                // (登録しないとギャラリーなどにすぐに反映されないため)
-                registAndroidDB(imgPath);
-
-            } catch (Exception e) {
-                Log.e("Debug", e.getMessage());
-            }
-
-            fos = null;
-
-            // takePicture するとプレビューが停止するので、再度プレビュースタート
-            mCamera.startPreview();
-
-            // mIsTake = false;
-        }
-    };
-
-    /**
-     * アンドロイドのデータベースへ画像のパスを登録
-     * @param path 登録するパス
-     */
-    private void registAndroidDB(String path) {
-        // アンドロイドのデータベースへ登録
-        // (登録しないとギャラリーなどにすぐに反映されないため)
-        ContentValues values = new ContentValues();
-        ContentResolver contentResolver = context.getContentResolver();
-        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-        values.put("_data", path);
-        contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-    }
 
 
 //--------------------------------------------------------------------------------
