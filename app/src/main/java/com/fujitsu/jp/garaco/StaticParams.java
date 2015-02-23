@@ -5,4 +5,6 @@ package com.fujitsu.jp.garaco;
  */
 public class StaticParams {
     protected static final String FACE_DETECT = "FACE";
+    protected static final String ACTION_ANIMATION = "file:///android_asset/action.html";
+    protected static final String STOP_ANIMATION = "file:///android_asset/stop.html";
 }
