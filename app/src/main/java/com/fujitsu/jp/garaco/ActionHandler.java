@@ -15,6 +15,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
+import android.webkit.WebView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -25,6 +26,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Created by clotcr_22 on 2015/02/16.
@@ -35,6 +37,7 @@ public class ActionHandler {
     private Context context;
     private TextToSpeech tts;
     private Camera mCam;
+    private WebView web;
 
     private Boolean face_ditect = false;
 
@@ -52,6 +55,9 @@ public class ActionHandler {
         try{
 
             JSONArray jsons = new JSONArray(json_org);
+
+            web.loadUrl(StaticParams.ACTION_ANIMATION);
+            web.reload();
 
             for (int i = 0; i < jsons.length(); i++) {
                 // 予報情報を取得
@@ -86,12 +92,12 @@ public class ActionHandler {
                     }
 
                 }
-
-
             }
 
-            if( !flg )
+            if( !flg ) {
                 Toast.makeText(activity, "何も該当しませんでした。", Toast.LENGTH_SHORT).show();
+                doTalk(resultsString +"が理解できませんでした。意味を教えてください。");
+            }
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -120,6 +126,8 @@ public class ActionHandler {
             exec(action.getString("action"),  action.getString("param"));
 
         }
+
+        //web.loadUrl(StaticParams.STOP_ANIMATION);
     }
 
     private void exec( String action, String param){
@@ -364,5 +372,13 @@ public class ActionHandler {
 
     public void setFace_ditect(Boolean face_ditect) {
         this.face_ditect = face_ditect;
+    }
+
+    public WebView getWeb() {
+        return web;
+    }
+
+    public void setWeb(WebView web) {
+        this.web = web;
     }
 }

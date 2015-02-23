@@ -20,6 +20,8 @@ import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -47,6 +49,9 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
     private String res = null;
 
     private Date lasttime = null;
+    private Date starttime = null;
+
+    private WebView web;
 
 
 
@@ -89,6 +94,17 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
         progressBar.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progressBar.setMessage("処理を実行中しています");
         progressBar.setCancelable(true);
+
+        //WebView
+        web = (WebView) findViewById(R.id.webView);
+        //web.setWebViewClient( new WebViewClient(){
+        //    @Override
+        //    public boolean shouldOverrideUrlLoading( WebView view, String url){
+        //       return false;
+        //    }
+        //});
+        web.loadUrl(StaticParams.STOP_ANIMATION);
+
 
         //カメラ
         mView = (SurfaceView) findViewById(R.id.surfaceView);
@@ -220,6 +236,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
             task.setTts(this.tts);
             act.setmCam(mCamera);
             act.setContext(context);
+            act.setWeb( web );
 
             //非同期処理開始
             task.execute("");
@@ -237,6 +254,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
 
         //表示
         progressBar.show();
+        starttime = new Date();
 
         // サブスレッドで実行するタスクを作成
         task = new MyAsyncTask() {
@@ -294,6 +312,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
         //act = new ActionHandler( this );
         act.setContext(context);
         act.setmCam( mCamera );
+        act.setWeb( web );
 
         task.execute( resultsString );
      }
@@ -343,6 +362,11 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
                 // View に渡す
                 //mCameraOverlayView.setFaces(faces);
 
+                //会話中画像を消す
+                if (starttime != null && (new Date()).getTime() - starttime.getTime() > 3000 ){
+                    web.loadUrl(StaticParams.STOP_ANIMATION);
+                    web.reload();
+                }
 
                 if(faces.length > 0){
 
@@ -370,6 +394,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
                         long a = (( new Date()).getTime() - lasttime.getTime());
                         Log.d("#######################", "時間（ミリ秒）"+ a);}
                     }
+
                 }
 
             }
