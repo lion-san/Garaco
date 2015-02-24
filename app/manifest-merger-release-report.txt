@@ -57,29 +57,31 @@ MERGED from com.android.support:support-v4:21.0.3:16:5
 		ADDED from AndroidManifest.xml:22:9
 activity#com.fujitsu.jp.garaco.MainActivity
 ADDED from AndroidManifest.xml:23:9
-	android:label
+	android:screenOrientation
 		ADDED from AndroidManifest.xml:25:13
+	android:label
+		ADDED from AndroidManifest.xml:26:13
 	android:name
 		ADDED from AndroidManifest.xml:24:13
 intent-filter#android.intent.action.MAIN+android.intent.category.LAUNCHER
-ADDED from AndroidManifest.xml:26:13
+ADDED from AndroidManifest.xml:27:13
 action#android.intent.action.MAIN
-ADDED from AndroidManifest.xml:27:17
+ADDED from AndroidManifest.xml:28:17
 	android:name
-		ADDED from AndroidManifest.xml:27:25
+		ADDED from AndroidManifest.xml:28:25
 category#android.intent.category.LAUNCHER
-ADDED from AndroidManifest.xml:29:17
+ADDED from AndroidManifest.xml:30:17
 	android:name
-		ADDED from AndroidManifest.xml:29:27
+		ADDED from AndroidManifest.xml:30:27
 activity#com.fujitsu.jp.garaco.Hello
-ADDED from AndroidManifest.xml:32:9
-	android:screenOrientation
-		ADDED from AndroidManifest.xml:32:41
-	android:name
-		ADDED from AndroidManifest.xml:32:19
-activity#com.fujitsu.jp.garaco.CameraActivity
 ADDED from AndroidManifest.xml:33:9
 	android:screenOrientation
-		ADDED from AndroidManifest.xml:33:50
+		ADDED from AndroidManifest.xml:33:41
 	android:name
 		ADDED from AndroidManifest.xml:33:19
+activity#com.fujitsu.jp.garaco.CameraActivity
+ADDED from AndroidManifest.xml:34:9
+	android:screenOrientation
+		ADDED from AndroidManifest.xml:34:50
+	android:name
+		ADDED from AndroidManifest.xml:34:19
