@@ -1,6 +1,7 @@
 package com.fujitsu.jp.garaco;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
@@ -20,6 +21,7 @@ import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.Window;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
@@ -75,6 +77,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         //Contextの取得
@@ -89,6 +92,8 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
         //TTSの初期化
         tts = new TextToSpeech(context, this);
 
+
+
         //ぐるぐる
         progressBar = new ProgressDialog(this);
         progressBar.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -97,22 +102,10 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
 
         //WebView
         web = (WebView) findViewById(R.id.webView);
-        //web.setWebViewClient( new WebViewClient(){
-        //    @Override
-        //    public boolean shouldOverrideUrlLoading( WebView view, String url){
-        //       return false;
-        //    }
-        //});
         web.loadUrl(StaticParams.STOP_ANIMATION);
-
 
         //カメラ
         mView = (SurfaceView) findViewById(R.id.surfaceView);
-        //mView = new SurfaceView(this);
-        //setContentView(mView);//ここでActivityに設定してしまうので、SurfaceViewのみに設定する
-        //SurfaceHolder holder = mView.getHolder();
-        //holder.addCallback(surfaceHolderCallback);
-        //holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
         //顔検知用重畳ビュー
         mCameraOverlayView = new CameraOverlayView(this);
