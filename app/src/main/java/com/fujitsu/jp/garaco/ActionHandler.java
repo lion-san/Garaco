@@ -112,9 +112,9 @@ public class ActionHandler {
             }
 
             //タイマーでアニメーションをオフ
-            Timer timer = new Timer();
-            AnimateController timeTask = new AnimateController();
-            timer.schedule( timeTask,  3000);
+            //Timer timer = new Timer();
+            //AnimateController timeTask = new AnimateController();
+            //timer.schedule( timeTask,  3000);
 
 
         } catch (JSONException e) {

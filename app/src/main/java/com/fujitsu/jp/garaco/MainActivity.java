@@ -570,7 +570,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
         //ホームボタンが押された時や、他のアプリが起動した時に呼ばれる
         //戻るボタンが押された場合には呼ばれない
         Toast.makeText(getApplicationContext(), "Good bye!" , Toast.LENGTH_SHORT).show();
-        this.finish();
+       // this.finish();
     }
 
     @Override
