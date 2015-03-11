@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.text.SpannableStringBuilder;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceHolder;
@@ -67,7 +68,8 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
 
     //プロジェクトリスト
     private CharSequence[] items;
-   private  ArrayList<String> list = new ArrayList<String>();
+    private  ArrayList<String> list = new ArrayList<String>();
+    AlertDialog dialog;
 
     /** カメラのハードウェアを操作する {@link Camera} クラスです。 */
     private Camera mCamera;
@@ -127,30 +129,29 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
                         // pjname
                         String pjname = event.getString("pjname");
 
-                        list.add( pjname );
-
-                        //リストの表示
-                        items = list.toArray(new CharSequence[list.size()]);
-                        new AlertDialog.Builder(MainActivity.this)
-                                .setTitle("Select Project")
-                                .setSingleChoiceItems(
-                                        items,
-                                        0, // Initial
-                                        new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which){
-                                                Toast.makeText(MainActivity.this, "You choice:" + which, Toast.LENGTH_SHORT).show();
-
-                                                //ロボナイゼーヨンイニシャライズ
-                                                //Robotプログラムスタート
-                                                initRobot( list.get(which) );
-
-                                            }
-                                        })
-                                .setPositiveButton("Close", null)
-                                .show();
-
+                        list.add(pjname);
                     }
+
+                    //リストの表示
+                    items = list.toArray(new CharSequence[list.size()]);
+                    dialog = new AlertDialog.Builder(MainActivity.this)
+                            .setTitle("Select Project")
+                            .setSingleChoiceItems(
+                                    items,
+                                    0, // Initial
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which){
+                                            Toast.makeText(MainActivity.this, list.get(which)+"を起動します", Toast.LENGTH_SHORT).show();
+                                            dialog.dismiss();
+                                            //ロボナイゼーヨンイニシャライズ
+                                            //Robotプログラムスタート
+                                            initRobot( list.get(which) );
+                                        }
+                                    })
+                            .setPositiveButton("Close", null)
+                            .show();
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                     Toast.makeText(MainActivity.this, "Network Busy!", Toast.LENGTH_SHORT).show();
@@ -562,5 +563,25 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
         super.onDestroy();
         tts.shutdown();
         //mCamera.release();
+    }
+
+    @Override
+    public void onUserLeaveHint(){
+        //ホームボタンが押された時や、他のアプリが起動した時に呼ばれる
+        //戻るボタンが押された場合には呼ばれない
+        Toast.makeText(getApplicationContext(), "Good bye!" , Toast.LENGTH_SHORT).show();
+        this.finish();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch(keyCode){
+            case KeyEvent.KEYCODE_BACK:
+                //戻るボタンが押された時の処理。
+                Toast.makeText(this, "Back button!" , Toast.LENGTH_SHORT).show();
+                finish();
+                return true;
+        }
+        return false;
     }
 }

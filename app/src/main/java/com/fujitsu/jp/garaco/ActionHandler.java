@@ -29,6 +29,8 @@ import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import jp.ne.docomo.smt.dev.common.http.AuthApiKey;
 import jp.ne.docomo.smt.dev.dialogue.Dialogue;
@@ -102,17 +104,30 @@ public class ActionHandler {
                 }
             }
 
-            if( !flg ) {
+            if(( !flg ) && (!resultsString.equals((StaticParams.FACE_DETECT)))) {
                 //Toast.makeText(activity, "何も該当しませんでした。", Toast.LENGTH_SHORT).show();
                 //doTalk(resultsString +"が理解できませんでした。意味を教えてください。");
                 Toast.makeText(activity, "Connecting to DoCoMo", Toast.LENGTH_SHORT).show();
                 doDocomo(resultsString);
             }
 
+            //タイマーでアニメーションをオフ
+            Timer timer = new Timer();
+            AnimateController timeTask = new AnimateController();
+            timer.schedule( timeTask,  3000);
+
+
         } catch (JSONException e) {
             e.printStackTrace();
             Toast.makeText(activity, "Network Busy!", Toast.LENGTH_SHORT).show();
             return;
+        }
+    }
+
+
+    private class AnimateController extends TimerTask{
+        public void run(){
+            web.loadUrl(StaticParams.STOP_ANIMATION);
         }
     }
 
@@ -136,8 +151,6 @@ public class ActionHandler {
             exec(action.getString("action"),  action.getString("param"));
 
         }
-
-        //web.loadUrl(StaticParams.STOP_ANIMATION);
     }
 
     private void exec( String action, String param){
