@@ -1,11 +1,13 @@
 package com.fujitsu.jp.garaco;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -28,6 +30,11 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import jp.ne.docomo.smt.dev.common.http.AuthApiKey;
+import jp.ne.docomo.smt.dev.dialogue.Dialogue;
+import jp.ne.docomo.smt.dev.dialogue.data.DialogueResultData;
+import jp.ne.docomo.smt.dev.dialogue.param.DialogueRequestParam;
+
 /**
  * Created by clotcr_22 on 2015/02/16.
  */
@@ -40,6 +47,8 @@ public class ActionHandler {
     private WebView web;
 
     private Boolean face_ditect = false;
+
+    private static DialogueResultData resultData = null;
 
     /**
      * コンストラクタ
@@ -90,13 +99,14 @@ public class ActionHandler {
                         this.executeAction(this.getActivity(), event.getJSONArray("actions"));
                         flg = true;
                     }
-
                 }
             }
 
             if( !flg ) {
-                Toast.makeText(activity, "何も該当しませんでした。", Toast.LENGTH_SHORT).show();
-                doTalk(resultsString +"が理解できませんでした。意味を教えてください。");
+                //Toast.makeText(activity, "何も該当しませんでした。", Toast.LENGTH_SHORT).show();
+                //doTalk(resultsString +"が理解できませんでした。意味を教えてください。");
+                Toast.makeText(activity, "Connecting to DoCoMo", Toast.LENGTH_SHORT).show();
+                doDocomo(resultsString);
             }
 
         } catch (JSONException e) {
@@ -159,6 +169,48 @@ public class ActionHandler {
         }
 
 
+    }
+
+
+    synchronized private void doDocomo( String param ){
+        AuthApiKey.initializeAuth("4d65436a6f3770753131784444772f3462526e594f575076772f6d716441336d6e3341376c4d534a434e34");
+
+        // サブスレッドで実行するタスクを作成
+        MyAsyncTask task = new MyAsyncTask() {
+            @Override
+            protected String doInBackground(String... params) {
+                String resultsString = params[0];
+                try {
+
+                //雑談対話要求処理クラスを作成
+                Dialogue dialogue = new Dialogue();
+                //雑談対話要求リクエストデータクラスを作成してパラメータをset する
+                // context には任意の文字列を設定する。
+                DialogueRequestParam param1 = new DialogueRequestParam();
+                param1.setUtt(resultsString);
+                //雑談対話要求処理クラスにリクエストデータを渡し、レスポンスデータを取得する
+                resultData = dialogue.request(param1);
+
+                //対話を継続するために context には任意の文字列を設定する。
+                if( resultData != null ){
+                    param1.setContext(resultData.getContext());
+                }
+                return resultData.getYomi();
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(String yomi) {
+                doTalk( yomi );
+            }
+        };
+
+        task.execute(param);
     }
 
     /**
