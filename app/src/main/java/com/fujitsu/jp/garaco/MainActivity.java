@@ -470,10 +470,10 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
                 //mCameraOverlayView.setFaces(faces);
 
                 //会話中画像を消す
-                if (starttime != null && (new Date()).getTime() - starttime.getTime() > 3000 ){
+                /*if (starttime != null && (new Date()).getTime() - starttime.getTime() > 3000 ){
                     web.loadUrl(StaticParams.STOP_ANIMATION);
                     web.reload();
-                }
+                }*/
 
                 if(faces.length > 0){
 
@@ -569,7 +569,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
     public void onUserLeaveHint(){
         //ホームボタンが押された時や、他のアプリが起動した時に呼ばれる
         //戻るボタンが押された場合には呼ばれない
-        Toast.makeText(getApplicationContext(), "Good bye!" , Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), "Pause!" , Toast.LENGTH_SHORT).show();
        // this.finish();
     }
 
@@ -578,7 +578,12 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
         switch(keyCode){
             case KeyEvent.KEYCODE_BACK:
                 //戻るボタンが押された時の処理。
-                Toast.makeText(this, "Back button!" , Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Good bye!" , Toast.LENGTH_SHORT).show();
+                finish();
+                return true;
+            case KeyEvent.KEYCODE_HOME:
+                //戻るボタンが押された時の処理。
+                Toast.makeText(this, "HOME!" , Toast.LENGTH_SHORT).show();
                 finish();
                 return true;
         }

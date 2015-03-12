@@ -111,10 +111,9 @@ public class ActionHandler {
                 doDocomo(resultsString);
             }
 
-            //タイマーでアニメーションをオフ
-            //Timer timer = new Timer();
-            //AnimateController timeTask = new AnimateController();
-            //timer.schedule( timeTask,  3000);
+
+            //アニメーションの停止
+            hideAnimation();
 
 
         } catch (JSONException e) {
@@ -124,9 +123,18 @@ public class ActionHandler {
         }
     }
 
+    /**
+     * アニメーションをとめる
+     */
+    synchronized public void hideAnimation(){
+        //タイマーでアニメーションをオフ
+        Timer timer = new Timer();
+        AnimateController timeTask = new AnimateController();
+        timer.schedule( timeTask,  3000);
+    }
 
     private class AnimateController extends TimerTask{
-        public void run(){
+        synchronized public void run(){
             web.loadUrl(StaticParams.STOP_ANIMATION);
         }
     }
@@ -198,16 +206,17 @@ public class ActionHandler {
                 //雑談対話要求処理クラスを作成
                 Dialogue dialogue = new Dialogue();
                 //雑談対話要求リクエストデータクラスを作成してパラメータをset する
-                // context には任意の文字列を設定する。
                 DialogueRequestParam param1 = new DialogueRequestParam();
                 param1.setUtt(resultsString);
-                //雑談対話要求処理クラスにリクエストデータを渡し、レスポンスデータを取得する
-                resultData = dialogue.request(param1);
 
                 //対話を継続するために context には任意の文字列を設定する。
                 if( resultData != null ){
                     param1.setContext(resultData.getContext());
                 }
+
+                //雑談対話要求処理クラスにリクエストデータを渡し、レスポンスデータを取得する
+                resultData = dialogue.request(param1);
+
                 return resultData.getYomi();
                 }
                 catch (Exception e){
