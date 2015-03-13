@@ -16,12 +16,12 @@ import java.io.ByteArrayOutputStream;
  */
 public class SendHttpRequest {
 
-    public String sendRequestToGarako(String project) {
+    public String sendRequestToGarako(String projectId) {
 
         HttpClient httpClient = new DefaultHttpClient();
 
         //StringBuilder uri = new StringBuilder("http://ec2-54-65-250-88.ap-northeast-1.compute.amazonaws.com/python/querygyarako.py?foo=" + msg);
-        StringBuilder uri = new StringBuilder("https://limitless-sands-8750.herokuapp.com/projects/"+ project + "/events.json");
+        StringBuilder uri = new StringBuilder("https://limitless-sands-8750.herokuapp.com/projects/"+ projectId + "/events.json");
         HttpGet request = new HttpGet(uri.toString());
 
         HttpResponse httpResponse = null;

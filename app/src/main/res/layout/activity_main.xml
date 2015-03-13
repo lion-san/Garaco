@@ -17,8 +17,8 @@
         android:columnCount="3">
 
         <WebView
-            android:layout_width="268dp"
-            android:layout_height="256dp"
+            android:layout_width="260dp"
+            android:layout_height="253dp"
             android:id="@+id/webView"
             android:layout_alignBaseline="@+id/txt1"
             android:layout_alignBottom="@+id/txt1"
@@ -29,8 +29,8 @@
             android:layout_rowSpan="2" />
 
         <SurfaceView
-            android:layout_width="268dp"
-            android:layout_height="256dp"
+            android:layout_width="243dp"
+            android:layout_height="253dp"
             android:id="@+id/surfaceView"
             android:focusable="false"
             android:layout_alignParentTop="true"
@@ -44,7 +44,7 @@
 
         <Button
             android:layout_width="70dp"
-            android:layout_height="203dp"
+            android:layout_height="213dp"
             android:text="Talk"
             android:id="@+id/talk"
             android:focusable="true"
@@ -55,7 +55,7 @@
             android:layout_column="2" />
 
         <ToggleButton
-            android:layout_width="wrap_content"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
             android:text=""
             android:id="@+id/toggleButton"
@@ -63,7 +63,7 @@
             android:layout_column="2" />
 
         <EditText
-            android:layout_width="530dp"
+            android:layout_width="497dp"
             android:layout_height="wrap_content"
             android:id="@+id/txt1"
             android:layout_alignBottom="@+id/send"
@@ -76,7 +76,7 @@
             android:layout_columnSpan="2" />
 
         <Button
-            android:layout_width="60dp"
+            android:layout_width="70dp"
             android:layout_height="40dp"
             android:text="送信"
             android:id="@+id/send"

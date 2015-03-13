@@ -69,6 +69,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
     //プロジェクトリスト
     private CharSequence[] items;
     private  ArrayList<String> list = new ArrayList<String>();
+    private ArrayList<String> pjId = new ArrayList<String>();
     AlertDialog dialog;
 
     /** カメラのハードウェアを操作する {@link Camera} クラスです。 */
@@ -128,8 +129,10 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
 
                         // pjname
                         String pjname = event.getString("pjname");
+                        String id = event.getString("id");
 
                         list.add(pjname);
+                        pjId.add(id);
                     }
 
                     //リストの表示
@@ -146,7 +149,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
                                             dialog.dismiss();
                                             //ロボナイゼーヨンイニシャライズ
                                             //Robotプログラムスタート
-                                            initRobot( list.get(which) );
+                                            initRobot( pjId.get(which) );
                                         }
                                     })
                             .setPositiveButton("Close", null)
@@ -256,17 +259,69 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
                     // 状態が変更された
                     Toast.makeText(MainActivity.this, "顔認識機能 : " + isChecked, Toast.LENGTH_SHORT).show();
 
-                    if(isChecked){
-                        mCamera.startFaceDetection();
-                    }
-                    else{
-                        mCamera.stopFaceDetection();
+                    try {
+                        if (isChecked) {
+                            // リスナをセット  // 顔検出の開始
+                            mCamera.setFaceDetectionListener(faceDetectionListener);
+                            mCamera.startFaceDetection();
+                        } else {
+                            mCamera.setFaceDetectionListener(null);
+                            mCamera.stopFaceDetection();
+                        }
+                    }catch(Exception e){
+                        e.printStackTrace();
+                        mCamera.setFaceDetectionListener(null);
+                        Toast.makeText(MainActivity.this, "この機種は顔認識機能は使えません", Toast.LENGTH_SHORT).show();
                     }
 
                 }
             });
-
     }
+
+    private FaceDetectionListener faceDetectionListener = new FaceDetectionListener() {
+        @Override
+        public void onFaceDetection(Face[] faces, Camera camera) {
+            Log.d("onFaceDetection", "顔検出数:" + faces.length);
+            // View に渡す
+            //mCameraOverlayView.setFaces(faces);
+
+            //会話中画像を消す
+                /*if (starttime != null && (new Date()).getTime() - starttime.getTime() > 3000 ){
+                    web.loadUrl(StaticParams.STOP_ANIMATION);
+                    web.reload();
+                }*/
+
+            if(faces.length > 0){
+
+                lasttime = null;
+
+                if (!act.getFace_ditect()) {
+
+                    act.setFace_ditect(true);
+                    //tts.speak("侵入者を検知しました", TextToSpeech.QUEUE_FLUSH, null);
+                    // 画像取得
+                    //mCamera.takePicture(null, null, mPicJpgListener);
+                    executeRobot(StaticParams.FACE_DETECT);
+
+                    lasttime = null;
+                }
+            }
+            else{
+                if(lasttime == null )
+                    lasttime = new Date();
+
+                    //検知ゼロが指定ミリ秒以上続くまで、処理しない
+                else if ( ((new Date()).getTime() - lasttime.getTime() > 10000)){
+                    act.setFace_ditect(false);//フラグをもどす
+                    if( lasttime != null){
+                        long a = (( new Date()).getTime() - lasttime.getTime());
+                        Log.d("#######################", "時間（ミリ秒）"+ a);}
+                }
+
+            }
+
+        }
+    };
 
 
     // アクティビティ終了時に呼び出される
@@ -450,9 +505,9 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
                 mCamera = Camera.open(1);
 
                 // リスナをセット  // 顔検出の開始
-                mCamera.setFaceDetectionListener(faceDetectionListener);
+                //mCamera.setFaceDetectionListener(faceDetectionListener);
 
-                mCamera.stopFaceDetection();
+                //mCamera.stopFaceDetection();
 
                 // プレビューをセットする
                 mCamera.setPreviewDisplay(holder);
@@ -519,7 +574,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
             // width, heightを変更する
             mCamera.setParameters(parameters);
             mCamera.startPreview();
-        }g
+        }
 
         @Override
         public void surfaceDestroyed(SurfaceHolder holder) {
@@ -569,7 +624,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
     public void onUserLeaveHint(){
         //ホームボタンが押された時や、他のアプリが起動した時に呼ばれる
         //戻るボタンが押された場合には呼ばれない
-        Toast.makeText(getApplicationContext(), "Pause!" , Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(), "Pause!" , Toast.LENGTH_SHORT).show();
        // this.finish();
     }
 
@@ -579,11 +634,6 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
             case KeyEvent.KEYCODE_BACK:
                 //戻るボタンが押された時の処理。
                 Toast.makeText(this, "Good bye!" , Toast.LENGTH_SHORT).show();
-                finish();
-                return true;
-            case KeyEvent.KEYCODE_HOME:
-                //戻るボタンが押された時の処理。
-                Toast.makeText(this, "HOME!" , Toast.LENGTH_SHORT).show();
                 finish();
                 return true;
         }
