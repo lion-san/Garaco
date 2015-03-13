@@ -519,7 +519,7 @@ public class MainActivity extends ActionBarActivity implements TextToSpeech.OnIn
             // width, heightを変更する
             mCamera.setParameters(parameters);
             mCamera.startPreview();
-        }
+        }g
 
         @Override
         public void surfaceDestroyed(SurfaceHolder holder) {
